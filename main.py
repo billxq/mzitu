@@ -5,6 +5,8 @@
 # @File    : main.py
 
 import os
+from multiprocessing.pool import Pool
+
 import requests
 from lxml import html
 from requests.exceptions import ConnectionError
@@ -103,22 +105,40 @@ def saveImgs(imgurls):   # 传进来一个图片下载链接的列表
             f.write(content)
             print("图片{}已下载！".format(imgurl))
 
+
+def main(seturl):
+    title = createSetDir(seturl)
+    if title:
+        os.chdir(title)
+        picPages = getPicPages(seturl)
+        picUrls = getPicUrl(picPages)
+        print(picUrls)
+        saveImgs(picUrls)
+        print("套图{}下载完成！".format(seturl))
+        os.chdir('..')
+    else:
+        print("Already finished!")
+
+
 if __name__ == '__main__':
     # dic = getSeturls()
     # saveTitleUrls(name='mzitu',dic=dic)
     r = dbConnect()
     createProjectDir(PROJECT_DIR)
     os.chdir(PROJECT_DIR)
-    for seturl in r.hkeys('mzitu'):
-        title = createSetDir(seturl)
-        if title:
-            os.chdir(title)
-            picPages = getPicPages(seturl)
-            picUrls = getPicUrl(picPages)
-            print(picUrls)
-            saveImgs(picUrls)
-            print("套图{}下载完成！".format(seturl))
-            os.chdir('..')
-        else:
-            print("Already finished!")
-            continue
+    pool = Pool(processes=2)
+    set_url_list = [url for url in r.hkeys('mzitu')]
+    pool.map(main,set_url_list)  # 增加多进程
+    # for seturl in r.hkeys('mzitu'):
+    #     title = createSetDir(seturl)
+    #     if title:
+    #         os.chdir(title)
+    #         picPages = getPicPages(seturl)
+    #         picUrls = getPicUrl(picPages)
+    #         print(picUrls)
+    #         saveImgs(picUrls)
+    #         print("套图{}下载完成！".format(seturl))
+    #         os.chdir('..')
+    #     else:
+    #         print("Already finished!")
+    #         continue
