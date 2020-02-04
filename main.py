@@ -6,7 +6,7 @@
 
 import os
 from multiprocessing.pool import Pool
-
+from multiprocessing import cpu_count
 import requests
 from lxml import html
 from requests.exceptions import ConnectionError
